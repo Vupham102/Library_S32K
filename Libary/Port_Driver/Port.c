@@ -14,31 +14,35 @@ void Port_SetPinConfig(const Port_Config_t* config) {
         return; // Invalid parameters
     }
 
-    // Clear previous configuration
+
     config->base->PCR[config->pin_number] = 0;
 
-    // Configure based on mode
     switch (config->mode) {
         case PORT_MODE_GPIO:
             config->base->PCR[config->pin_number] = PORT_PCR_MUX(0x01) |
                                                   (config->drive_strength ? PORT_PCR_DSE(1) : 0) |
-                                                  (config->pull == PORT_PULL_UP ? PORT_PCR_PUE(1) | PORT_PCR_PUS(1) :
-                                                   config->pull == PORT_PULL_DOWN ? PORT_PCR_PUE(1) : 0);
+                                                  (config->pull == PORT_PULL_UP   ? PORT_PCR_PE(1) | PORT_PCR_PS(1) :
+                                                   config->pull == PORT_PULL_DOWN ? PORT_PCR_PE(1) : 0);
             break;
+
         case PORT_MODE_SPI:
             config->base->PCR[config->pin_number] = PORT_PCR_MUX(0x02);
             break;
+
         case PORT_MODE_I2C:
             config->base->PCR[config->pin_number] = PORT_PCR_MUX(0x03);
             break;
+
         case PORT_MODE_PWM:
             config->base->PCR[config->pin_number] = PORT_PCR_MUX(0x04);
             break;
+
         case PORT_MODE_INTERRUPT:
             config->base->PCR[config->pin_number] = PORT_PCR_MUX(0x01) |
-                                                  PORT_PCR_PUE(1) | PORT_PCR_PUS(1) |
-                                                  PORT_PCR_IRQC(0b1011); // Interrupt on both edges
+                                                    PORT_PCR_PE(1) | PORT_PCR_PS(1) |  // Enable pull-up
+                                                    PORT_PCR_IRQC(0b1011);             // Interrupt on both edges
             break;
+
         default:
             break;
     }

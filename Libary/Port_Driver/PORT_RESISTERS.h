@@ -36,10 +36,15 @@ typedef struct {
 #define PORTE  ((PORT_Type*)PORTE_BASE)
 
 /* PCR bit fields */
-#define PORT_PCR_MUX(x)      ((uint32_t)(((x) & 0x07) << 8))  /*!< MUX field for pin function */
-#define PORT_PCR_DSE(x)      ((uint32_t)(((x) & 0x01) << 6))  /*!< Drive Strength Enable */
-#define PORT_PCR_PUE(x)      ((uint32_t)(((x) & 0x01) << 5))  /*!< Pull Enable */
-#define PORT_PCR_PUS(x)      ((uint32_t)(((x) & 0x01) << 4))  /*!< Pull Select (0: pull-down, 1: pull-up) */
-#define PORT_PCR_IRQC(x)     ((uint32_t)(((x) & 0x0F) << 16)) /*!< Interrupt Configuration */
+/* PCR bit fields */
+#define PORT_PCR_PS(x)       ((uint32_t)(((x) & 0x01) << 0))   /*!< Pull Select: 0=Down, 1=Up */
+#define PORT_PCR_PE(x)       ((uint32_t)(((x) & 0x01) << 1))   /*!< Pull Enable */
+#define PORT_PCR_PFE(x)      ((uint32_t)(((x) & 0x01) << 4))   /*!< Passive Filter Enable */
+#define PORT_PCR_DSE(x)      ((uint32_t)(((x) & 0x01) << 6))   /*!< Drive Strength Enable */
+#define PORT_PCR_MUX(x)      ((uint32_t)(((x) & 0x07) << 8))   /*!< Pin Mux Control */
+#define PORT_PCR_LK(x)       ((uint32_t)(((x) & 0x01) << 15))  /*!< Lock Register */
+#define PORT_PCR_IRQC(x)     ((uint32_t)(((x) & 0x0F) << 16))  /*!< Interrupt Configuration */
+#define PORT_PCR_ISF(x)      ((uint32_t)(((x) & 0x01) << 24))  /*!< Interrupt Status Flag */
+
 
 #endif /* PORT_REGISTERS_H */
