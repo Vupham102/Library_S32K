@@ -1,13 +1,35 @@
-#ifndef PCC_H
-#define PCC_H
-#include "PCC_Registers.h"
+/**
+*   @file    pcc.h
+*   @brief   Declaration of function prototypes and special parameters for the PCC module.
+*   @details This file contains the definitions for structures, the PCC_Type,
+*            the base address of PCC, and measures to prevent multiple declarations.
+*/
 
-typedef struct 
-{
-    unsigned char index;
-}PCC_Config;
+/*==================================================================================================
+==================================================================================================*/
 
-void PCC_ENA(const PCC_Config* configptr);
-void PCC_DIS(const PCC_Config* configptr);
+#ifndef PCC_H_
+#define PCC_H_
 
-#endif
+/*==================================================================================================
+*                                        INCLUDE FILES
+==================================================================================================*/
+
+#include "pcc_registers.h"
+
+/*==================================================================================================
+*                                    FUNCTION PROTOTYPES
+==================================================================================================*/
+
+void PCC_EnableClock(volatile unsigned int *pccRegister);
+void PCC_DisableClock(volatile unsigned int *pccRegister);
+void PCC_SetClockSource(volatile unsigned int *pccRegister, unsigned int clockSource);
+void PCC_SetClockFraction(volatile unsigned int *pccRegister, unsigned int clockFraction);
+void PCC_SelectClockDivider(volatile unsigned int *pccRegister, unsigned int clockDivider);
+unsigned int PCC_GetClockStatus(volatile unsigned int *pccRegister);
+unsigned int PCC_IsPeripheralPresent(volatile unsigned int *pccRegister);
+
+#endif // PCC_H_
+
+/*==================================================================================================
+==================================================================================================*/

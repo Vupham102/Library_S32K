@@ -1,66 +1,123 @@
 /*==================================================================================================
 *                                        INCLUDE FILES
 ==================================================================================================*/
-#include "NVIC.h"
+#include "nvic.h"
+
+/*==================================================================================================
+*                                      ``LOCAL MACRO
+==================================================================================================*/
+#define NVIC_GROUP_SIZE 5    /* Shift 5 bits to receive the number of register */
+#define NVIC_BIT_MASK 0x1F   /* Mask to define the exact bit field of the register */
 
 /*==================================================================================================
 *                                       GLOBAL FUNCTIONS
 ==================================================================================================*/
 /*!
- * @brief Enable interrupt
+ * @brief     Enable interrupt
  *
+ * @detail    Enable Nested Vectored Interrupt Controller by IRQ number, from 0 to 112
  *
- * @param[in] IRQ_number The number id of specific device to enable interrupt
- * @return 
+ * @param[in] IRQn The Interrupt Request Numbers defined by enum IRQn_Type
+ *
+ * @return    void
  */
-void NVIC_EnableInterrupt( IRQn_Type IRQ_number ){
-	NVIC->ISER[(unsigned char)IRQ_number / 32] |= (1 << (unsigned char)IRQ_number % 32);
+void NVIC_EnableIRQ(unsigned int IRQn) {
+  NVIC->NVIC_ISER[IRQn >> NVIC_GROUP_SIZE] |= (1 << (IRQn & NVIC_BIT_MASK));
 }
 
-/*==================================================================================================
-*                                       GLOBAL FUNCTIONS
-==================================================================================================*/
 /*!
- * @brief Disable interrupt
+ * @brief     Disable interrupt
  *
+ * @detail    Disable Nested Vectored Interrupt Controller by IRQ number, from 0 to 112
  *
- * @param[in] IRQ_number The number id of specific device to disable interrupt
- * @return 
+ * @param[in] IRQn The Interrupt Request Numbers defined by enum IRQn_Type
+ *
+ * @return    void
  */
-void NVIC_DisableInterrupt( IRQn_Type IRQ_number ){
-	NVIC->ICER[(unsigned char)IRQ_number / 32] |= (1 << (unsigned char)IRQ_number % 32);
+void NVIC_DisableIRQ(unsigned int IRQn){
+	NVIC->NVIC_ICER[IRQn >> NVIC_GROUP_SIZE] |= (1 << (IRQn & NVIC_BIT_MASK));
 }
 
-/*==================================================================================================
-*                                       GLOBAL FUNCTIONS
-==================================================================================================*/
 /*!
- * @brief Clear pending flag of IRQ
+ * @brief     SetPending interrupt
  *
+ * @detail    SetPending Nested Vectored Interrupt Controller by IRQ number, from 0 to 112
  *
- * @param[in] IRQ_number The number id of specific device to clear pending flag
- * @return 
+ * @param[in] IRQn The Interrupt Request Numbers defined by enum IRQn_Type
+ *
+ * @return    void
  */
-void NVIC_ClearPendingFlag( IRQn_Type IRQ_number ){
-	NVIC->ICPR[(unsigned char)IRQ_number / 32] |= (1 << (unsigned char)IRQ_number % 32);
+void NVIC_SetPendingIRQ(unsigned int IRQn){
+	NVIC->NVIC_ISPR[IRQn >> NVIC_GROUP_SIZE] |= (1 << (IRQn & NVIC_BIT_MASK));
 }
 
-/*==================================================================================================
-*                                       GLOBAL FUNCTIONS
-==================================================================================================*/
 /*!
- * @brief Set level priority of interrupt
+ * @brief     ClearPending interrupt
  *
+ * @detail    ClearPending Nested Vectored Interrupt Controller by IRQ number, from 0 to 112
  *
- * @param[in] IRQ_number The number id of specific device want to set priority
- * @param[in] priority The priority level want to set
- * @return 
+ * @param[in] IRQn The Interrupt Request Numbers defined by enum IRQn_Type
+ *
+ * @return    void
  */
-void NVIC_SetPriority( IRQn_Type IRQ_number,unsigned char priority){
+void NVIC_ClearPendingIRQ(unsigned int IRQn){
+	NVIC->NVIC_ICPR[IRQn >> NVIC_GROUP_SIZE] |= (1 << (IRQn & NVIC_BIT_MASK));
+}
+
+/*!
+ * @brief     Get state active or inactive of interrupt
+ *
+ * @detail    Get state Actived or Inactive of Nested Vectored Interrupt Controller by IRQ number, 
+ * 						from 0 to 112
+ *
+ * @param[in] IRQn The Interrupt Request Numbers defined by enum IRQn_Type
+ *
+ * @return    unsigned int
+ */
+unsigned int NVIC_GetActive(unsigned int IRQn) {
+    return (NVIC->NVIC_IABR[IRQn >> NVIC_GROUP_SIZE] & (1 << (IRQn & NVIC_BIT_MASK))) ? 1 : 0;
+}
+
+/*!
+ * @brief     Set priorty of interrupt specificed.
+ *
+ * @detail    Set priorty of Nested Vectored Interrupt Controller by IRQ number, from 0 to 112
+ *
+ * @param[in] IRQn The Interrupt Request Numbers defined by enum IRQn_Type
+ *
+ * @return    void
+ */
+void NVIC_SetPriority(unsigned int IRQn, unsigned int priority) {
 	if(priority < 16u){
-		NVIC->IPR[(unsigned char)IRQ_number] |= (priority << 4);
+		NVIC->NVIC_IPR[(unsigned int)IRQn] = (priority << 4);
+	}else{
+		/*Do nothing/Error notification*/
 	}
-	else{
-	}
-	
 }
+
+/*!
+ * @brief     Get priorty of interrupt specificed.
+ *
+ * @detail    Get priorty of Nested Vectored Interrupt Controller by IRQ number, from 0 to 112
+ *
+ * @param[in] IRQn The Interrupt Request Numbers defined by enum IRQn_Type
+ *
+ * @return    unsigned int
+ */
+unsigned int NVIC_GetPriority(unsigned int IRQn) {
+    return (NVIC->NVIC_IPR[IRQn >> 2] >> ((IRQn & 0x3) * 8)) & 0xFF;
+}
+
+/*!
+ * @brief     Software trigger
+ *
+ * @detail    Trigger interrupt of IRQn to debugging
+ *
+ * @param[in] IRQn The Interrupt Request Numbers defined by enum IRQn_Type
+ *
+ * @return    void
+ */
+void NVIC_TriggerIRQ(unsigned int IRQn){
+		NVIC->STIR = IRQn;
+}
+

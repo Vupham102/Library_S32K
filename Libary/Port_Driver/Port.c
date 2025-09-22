@@ -1,73 +1,38 @@
-/**
- * @file Port.c
- * @brief PORT driver implementation for S32K144.
+/*==================================================================================================
+*                                        INCLUDE FILES
+==================================================================================================*/
+
+#include "port.h"
+
+/*==================================================================================================
+*                                      DEFINES AND MACROS
+==================================================================================================*/
+
+/*!
+ * @brief  Initializes the related registers that are not contained in the PORT module.
+ *
+ * @detail These definitions must be added to configure the clock source for PORT
+ *         and set the mode for the PORT module.
  */
 
-#include "Port.h"
-
-/**
- * @brief Configures a pin's function and characteristics.
- * @param config Pointer to the PORT configuration structure.
+/*==================================================================================================
+*                                       GLOBAL FUNCTIONS
+==================================================================================================*/
+/*!
+ * @brief     Initializes the pins with the provided configuration structure.
+ *
+ * @detail    This function configures the pins with the options specified in the
+ *            given configuration structure.
+ *
+ * @param[in] pPORTx Pointer to the base address of the PORT peripheral
+ * @param[in] PinNumber The pin number to be configured
+ * @param[in] Mode The configuration structure containing pin settings
+ * @return    void
  */
-void Port_SetPinConfig(const Port_Config_t* config) {
-    if (config == NULL || config->base == NULL || config->pin_number > 31) {
-        return; // Invalid parameters
-    }
-
-
-    config->base->PCR[config->pin_number] = 0;
-
-    switch (config->mode) {
-        case PORT_MODE_GPIO:
-            config->base->PCR[config->pin_number] = PORT_PCR_MUX(0x01) |
-                                                  (config->drive_strength ? PORT_PCR_DSE(1) : 0) |
-                                                  (config->pull == PORT_PULL_UP   ? PORT_PCR_PE(1) | PORT_PCR_PS(1) :
-                                                   config->pull == PORT_PULL_DOWN ? PORT_PCR_PE(1) : 0);
-            break;
-
-        case PORT_MODE_SPI:
-            config->base->PCR[config->pin_number] = PORT_PCR_MUX(0x02);
-            break;
-
-        case PORT_MODE_I2C:
-            config->base->PCR[config->pin_number] = PORT_PCR_MUX(0x03);
-            break;
-
-        case PORT_MODE_PWM:
-            config->base->PCR[config->pin_number] = PORT_PCR_MUX(0x04);
-            break;
-
-        case PORT_MODE_INTERRUPT:
-            config->base->PCR[config->pin_number] = PORT_PCR_MUX(0x01) |
-                                                    PORT_PCR_PE(1) | PORT_PCR_PS(1) |  // Enable pull-up
-                                                    PORT_PCR_IRQC(0b1011);             // Interrupt on both edges
-            break;
-
-        default:
-            break;
-    }
+void Port_Init(Port_Type *pPORTx, unsigned char PinNumber, Port_Mode_t Mode) {
+    pPORTx->PCR[PinNumber].PORT_PCR_Fields.PE = Mode.PullEnable;
+    pPORTx->PCR[PinNumber].PORT_PCR_Fields.PS = Mode.PullUpDown;
+    pPORTx->PCR[PinNumber].PORT_PCR_Fields.MUX = Mode.MUX;
+    pPORTx->PCR[PinNumber].PORT_PCR_Fields.IQRC = Mode.IQRC;
 }
 
-/**
- * @brief Enables interrupt for a specific pin.
- * @param base PORT base (PORTA, PORTB, etc.).
- * @param pin_number Pin number (0-31).
- */
-void Port_EnableInterrupt(PORT_Type* base, uint8_t pin_number) {
-    if (base == NULL || pin_number > 31) {
-        return; // Invalid parameters
-    }
-
-    // Enable interrupt in NVIC based on PORT base
-    if (base == PORTA) {
-        NVIC->ISER[59 / 32] |= (1 << (59 % 32)); // PORTA_IRQn = 59
-    } else if (base == PORTB) {
-        NVIC->ISER[60 / 32] |= (1 << (60 % 32)); // PORTB_IRQn = 60
-    } else if (base == PORTC) {
-        NVIC->ISER[61 / 32] |= (1 << (61 % 32)); // PORTC_IRQn = 61
-    } else if (base == PORTD) {
-        NVIC->ISER[62 / 32] |= (1 << (62 % 32)); // PORTD_IRQn = 62
-    } else if (base == PORTE) {
-        NVIC->ISER[63 / 32] |= (1 << (63 % 32)); // PORTE_IRQn = 63
-    }
-}
